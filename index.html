@@ -43,6 +43,13 @@
             display: block;
         }
 
+        .top-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -118,14 +125,21 @@
         }
         button#cancelBtn:hover { background-color: #495057; }
 
-        button#refreshBtn {
+        .action-btn-top {
             background-color: #20c997;
             color: white;
             padding: 10px 20px;
             font-size: 14px;
-            margin-bottom: 20px;
         }
-        button#refreshBtn:hover { background-color: #12b886; }
+        .action-btn-top:hover { background-color: #12b886; }
+
+        .compare-btn {
+            background-color: #7950f2;
+            color: white;
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+        .compare-btn:hover { background-color: #6741d9; }
 
         .import-section {
             margin-bottom: 20px;
@@ -241,6 +255,8 @@
         .edit-btn:hover { background-color: #f08c00; }
         .delete-btn { background-color: #fa5252; }
         .delete-btn:hover { background-color: #e03131; }
+        .quote-btn { background-color: #7950f2; }
+        .quote-btn:hover { background-color: #6741d9; }
 
         .empty-message {
             text-align: center;
@@ -299,6 +315,164 @@
             margin-left: 10px;
         }
 
+        /* MODAL STYLES */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+        .modal.show {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .modal-content {
+            background-color: white;
+            margin: 3% auto;
+            padding: 0;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 1200px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: slideDown 0.3s;
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-header {
+            padding: 20px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h3 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .close {
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .close:hover {
+            opacity: 0.8;
+        }
+        .modal-body {
+            padding: 30px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        /* QUOTE COMPARISON STYLES */
+        .quote-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .quote-input-group {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 2fr auto;
+            gap: 10px;
+            align-items: end;
+            margin-bottom: 10px;
+        }
+        .quote-input-group input, .quote-input-group select {
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+        }
+        .add-quote-btn {
+            background-color: #51cf66;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .add-quote-btn:hover {
+            background-color: #40c057;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .comparison-table th {
+            background-color: #495057;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        .comparison-table td {
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .best-quote {
+            background-color: #d3f9d8 !important;
+            font-weight: bold;
+        }
+        .best-quote::before {
+            content: '🏆 ';
+        }
+        .quote-price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .quote-delete {
+            background-color: #fa5252;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .quote-delete:hover {
+            background-color: #e03131;
+        }
+
+        .material-select-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e7f5ff;
+            border-radius: 8px;
+            border-left: 4px solid #228be6;
+        }
+        .material-select-section label {
+            font-size: 14px;
+            color: #1971c2;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .material-select-section select {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        .no-quotes {
+            text-align: center;
+            padding: 40px;
+            color: #868e96;
+        }
+
         .footer {
             margin-top: auto;
             padding-top: 30px;
@@ -355,7 +529,10 @@
 
     <div class="loading" id="loadingIndicator">⏳ Yükleniyor...</div>
 
-    <button id="refreshBtn" onclick="loadSuppliers()">🔄 Yenile</button>
+    <div class="top-actions">
+        <button class="action-btn-top" onclick="loadSuppliers()">🔄 Yenile</button>
+        <button class="compare-btn" onclick="openComparisonModal()">🏆 Teklif Karşılaştır</button>
+    </div>
 
     <div class="form-grid">
         <div class="form-group">
@@ -428,12 +605,12 @@
             <thead>
                 <tr>
                     <th class="sortable" onclick="sortTable('material')" width="12%">Malzeme</th>
-                    <th class="sortable" onclick="sortTable('company')" width="18%">Firma</th>
+                    <th class="sortable" onclick="sortTable('company')" width="16%">Firma</th>
                     <th class="sortable" onclick="sortTable('country')" width="10%">Ülke</th>
-                    <th class="sortable" onclick="sortTable('contactPerson')" width="13%">İlgili Kişi(ler)</th>
-                    <th width="13%">Telefon(lar)</th>
-                    <th width="18%">Mail Adresleri</th>
-                    <th width="13%">İşlemler</th>
+                    <th class="sortable" onclick="sortTable('contactPerson')" width="12%">İlgili Kişi(ler)</th>
+                    <th width="12%">Telefon(lar)</th>
+                    <th width="16%">Mail Adresleri</th>
+                    <th width="18%">İşlemler</th>
                 </tr>
             </thead>
             <tbody id="supplierList"></tbody>
@@ -463,6 +640,60 @@
     </div>
 </div>
 
+<!-- COMPARISON MODAL -->
+<div id="comparisonModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>🏆 Teklif Karşılaştırma</h3>
+            <span class="close" onclick="closeComparisonModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="material-select-section">
+                <label>📦 Karşılaştırmak istediğiniz malzemeyi seçin:</label>
+                <select id="comparisonMaterial" onchange="loadQuotesForMaterial()">
+                    <option value="">-- Malzeme Seçin --</option>
+                </select>
+            </div>
+
+            <div class="quote-form">
+                <h4>➕ Yeni Teklif Ekle</h4>
+                <div class="quote-input-group">
+                    <div class="form-group">
+                        <label>Tedarikçi</label>
+                        <select id="quoteSupplier">
+                            <option value="">Seçiniz...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Fiyat</label>
+                        <input type="number" id="quotePrice" placeholder="0.00" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Para Birimi</label>
+                        <select id="quoteCurrency">
+                            <option value="TRY">₺ TRY</option>
+                            <option value="USD">$ USD</option>
+                            <option value="EUR">€ EUR</option>
+                            <option value="GBP">£ GBP</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Notlar</label>
+                        <input type="text" id="quoteNotes" placeholder="Opsiyonel">
+                    </div>
+                    <button class="add-quote-btn" onclick="addQuote()">Ekle</button>
+                </div>
+            </div>
+
+            <div id="quotesContainer">
+                <div class="no-quotes">
+                    📋 Henüz teklif eklenmedi. Yukarıdan teklif ekleyebilirsiniz.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div id="toast" class="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -470,7 +701,7 @@
 // ============================================
 // AYARLAR - Buradan değiştirin!
 // ============================================
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyG-iWFC-2iy9Z3nKoqGIfuUi7HigqNqlxewAtL1CR0s5RFzEzW27v0pi0KUIILeYcNqg/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyb_o9QipvGjxMzJfjErMDkKbAmpTUI6svzBy4IamCvCupSsRgKlVstoMXlMPItq0M_/exec';
 
 let editingRowIndex = null;
 let currentPage = 1;
@@ -479,6 +710,9 @@ let currentSort = { column: null, direction: 'asc' };
 let filteredData = [];
 let allSuppliers = [];
 let tempRowIndex = 999999;
+
+// QUOTES DATA (LocalStorage'da saklanacak)
+let quotesData = JSON.parse(localStorage.getItem('quotesData') || '{}');
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('year').textContent = new Date().getFullYear();
@@ -687,6 +921,7 @@ function renderTable(data) {
                 <td>
                     <button class="action-btn edit-btn" onclick="editSupplier(${s.rowIndex})">Düzenle</button>
                     <button class="action-btn delete-btn" onclick="deleteSupplier(${s.rowIndex})">Sil</button>
+                    <button class="action-btn quote-btn" onclick="openQuoteModal('${s.material}', '${s.company}')">Teklif</button>
                 </td>
             `;
             list.appendChild(row);
@@ -852,6 +1087,177 @@ async function importData() {
         fileInput.value = '';
     };
     reader.readAsArrayBuffer(file);
+}
+
+// ============================================
+// QUOTE COMPARISON FUNCTIONS
+// ============================================
+
+function openComparisonModal() {
+    const modal = document.getElementById('comparisonModal');
+    modal.classList.add('show');
+
+    // Malzeme listesini doldur
+    const materialSelect = document.getElementById('comparisonMaterial');
+    const uniqueMaterials = [...new Set(allSuppliers.map(s => s.material))].filter(m => m);
+    materialSelect.innerHTML = '<option value="">-- Malzeme Seçin --</option>';
+    uniqueMaterials.forEach(material => {
+        const option = document.createElement('option');
+        option.value = material;
+        option.textContent = material;
+        materialSelect.appendChild(option);
+    });
+}
+
+function closeComparisonModal() {
+    const modal = document.getElementById('comparisonModal');
+    modal.classList.remove('show');
+}
+
+function openQuoteModal(material, company) {
+    openComparisonModal();
+    document.getElementById('comparisonMaterial').value = material;
+    loadQuotesForMaterial();
+
+    // Tedarikçiyi otomatik seç
+    setTimeout(() => {
+        const supplierSelect = document.getElementById('quoteSupplier');
+        for (let i = 0; i < supplierSelect.options.length; i++) {
+            if (supplierSelect.options[i].textContent === company) {
+                supplierSelect.selectedIndex = i;
+                break;
+            }
+        }
+    }, 100);
+}
+
+function loadQuotesForMaterial() {
+    const material = document.getElementById('comparisonMaterial').value;
+    if (!material) {
+        document.getElementById('quotesContainer').innerHTML = '<div class="no-quotes">📋 Lütfen bir malzeme seçin.</div>';
+        return;
+    }
+
+    // Bu malzemeyi satan tedarikçileri listele
+    const suppliers = allSuppliers.filter(s => s.material === material);
+    const supplierSelect = document.getElementById('quoteSupplier');
+    supplierSelect.innerHTML = '<option value="">Seçiniz...</option>';
+    suppliers.forEach(s => {
+        const option = document.createElement('option');
+        option.value = s.company;
+        option.textContent = s.company;
+        supplierSelect.appendChild(option);
+    });
+
+    // Teklifleri göster
+    displayQuotes(material);
+}
+
+function addQuote() {
+    const material = document.getElementById('comparisonMaterial').value;
+    const supplier = document.getElementById('quoteSupplier').value;
+    const price = parseFloat(document.getElementById('quotePrice').value);
+    const currency = document.getElementById('quoteCurrency').value;
+    const notes = document.getElementById('quoteNotes').value.trim();
+
+    if (!material || !supplier || !price || price <= 0) {
+        showToast('Lütfen tüm gerekli alanları doldurun!', true);
+        return;
+    }
+
+    // Quotes data structure: { material: [ {supplier, price, currency, notes, date}, ... ] }
+    if (!quotesData[material]) {
+        quotesData[material] = [];
+    }
+
+    quotesData[material].push({
+        supplier,
+        price,
+        currency,
+        notes,
+        date: new Date().toISOString()
+    });
+
+    // LocalStorage'a kaydet
+    localStorage.setItem('quotesData', JSON.stringify(quotesData));
+
+    // Formu temizle
+    document.getElementById('quotePrice').value = '';
+    document.getElementById('quoteNotes').value = '';
+
+    showToast('Teklif eklendi!');
+    displayQuotes(material);
+}
+
+function displayQuotes(material) {
+    const container = document.getElementById('quotesContainer');
+    const quotes = quotesData[material] || [];
+
+    if (quotes.length === 0) {
+        container.innerHTML = '<div class="no-quotes">📋 Bu malzeme için henüz teklif eklenmedi.</div>';
+        return;
+    }
+
+    // En iyi teklifi bul (en düşük fiyat)
+    let bestQuoteIndex = 0;
+    let bestPrice = Infinity;
+
+    quotes.forEach((q, index) => {
+        // Basit kur dönüşümü (gerçek uygulamada API kullanılmalı)
+        let priceInTRY = q.price;
+        if (q.currency === 'USD') priceInTRY *= 30;
+        else if (q.currency === 'EUR') priceInTRY *= 33;
+        else if (q.currency === 'GBP') priceInTRY *= 38;
+
+        if (priceInTRY < bestPrice) {
+            bestPrice = priceInTRY;
+            bestQuoteIndex = index;
+        }
+    });
+
+    let html = '<table class="comparison-table"><thead><tr>';
+    html += '<th>Tedarikçi</th><th>Fiyat</th><th>Notlar</th><th>Tarih</th><th>İşlem</th>';
+    html += '</tr></thead><tbody>';
+
+    quotes.forEach((q, index) => {
+        const isBest = index === bestQuoteIndex;
+        const rowClass = isBest ? 'best-quote' : '';
+        const date = new Date(q.date).toLocaleDateString('tr-TR');
+        const currencySymbol = q.currency === 'TRY' ? '₺' : q.currency === 'USD' ? '$' : q.currency === 'EUR' ? '€' : '£';
+
+        html += `<tr class="${rowClass}">`;
+        html += `<td><strong>${q.supplier}</strong></td>`;
+        html += `<td><span class="quote-price">${currencySymbol} ${q.price.toFixed(2)}</span></td>`;
+        html += `<td>${q.notes || '-'}</td>`;
+        html += `<td>${date}</td>`;
+        html += `<td><button class="quote-delete" onclick="deleteQuote('${material}', ${index})">Sil</button></td>`;
+        html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+function deleteQuote(material, index) {
+    if (!confirm('Bu teklifi silmek istediğinizden emin misiniz?')) return;
+
+    quotesData[material].splice(index, 1);
+
+    if (quotesData[material].length === 0) {
+        delete quotesData[material];
+    }
+
+    localStorage.setItem('quotesData', JSON.stringify(quotesData));
+    showToast('Teklif silindi!');
+    displayQuotes(material);
+}
+
+// Modal dışına tıklanınca kapat
+window.onclick = function(event) {
+    const modal = document.getElementById('comparisonModal');
+    if (event.target === modal) {
+        closeComparisonModal();
+    }
 }
 </script>
 
