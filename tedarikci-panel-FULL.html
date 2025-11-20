@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tedarikçi Yönetim Paneli</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            padding: 20px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            margin-top: 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #228be6;
+            font-size: 16px;
+            display: none;
+        }
+        .loading.active {
+            display: block;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        input, select {
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4dabf7;
+            box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.2);
+        }
+
+        .btn-group {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+
+        button#saveBtn {
+            flex: 1;
+            background-color: #228be6;
+            color: white;
+        }
+        button#saveBtn:hover { background-color: #1c7ed6; }
+        button#saveBtn:disabled {
+            background-color: #adb5bd;
+            cursor: not-allowed;
+        }
+
+        button#saveBtn.update-mode {
+            background-color: #fd7e14;
+        }
+        button#saveBtn.update-mode:hover { background-color: #e8590c; }
+
+        button#cancelBtn {
+            background-color: #868e96;
+            color: white;
+            display: none;
+        }
+        button#cancelBtn:hover { background-color: #495057; }
+
+        button#refreshBtn {
+            background-color: #20c997;
+            color: white;
+            padding: 10px 20px;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        button#refreshBtn:hover { background-color: #12b886; }
+
+        .import-section {
+            margin-bottom: 20px;
+            text-align: right;
+        }
+        .import-btn {
+            background-color: #20c997;
+            color: white;
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+        .import-btn:hover { background-color: #12b886; }
+        #importFile {
+            display: none;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 12px;
+            padding-left: 40px;
+            box-sizing: border-box;
+            border: 2px solid #e9ecef;
+        }
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #adb5bd;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1200px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+            font-size: 14px;
+        }
+        th {
+            background-color: #343a40;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+        th:hover {
+            background-color: #495057;
+        }
+        th.sortable::after {
+            content: ' ⇅';
+            opacity: 0.5;
+            font-size: 12px;
+        }
+        th.sort-asc::after {
+            content: ' ▲';
+            opacity: 1;
+        }
+        th.sort-desc::after {
+            content: ' ▼';
+            opacity: 1;
+        }
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .list-item {
+            display: block;
+            margin-bottom: 4px;
+            padding-bottom: 4px;
+            border-bottom: 1px dashed #eee;
+        }
+        .list-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .country-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #e7f5ff;
+            color: #1971c2;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .data-link { color: #228be6; text-decoration: none; }
+        .data-link:hover { text-decoration: underline; }
+        .phone-link { color: #20c997; text-decoration: none; font-weight: 500; }
+
+        .action-btn {
+            padding: 6px 10px;
+            border-radius: 4px;
+            color: white;
+            font-size: 12px;
+            margin-right: 5px;
+            white-space: nowrap;
+        }
+        .edit-btn { background-color: #fab005; color: #333; }
+        .edit-btn:hover { background-color: #f08c00; }
+        .delete-btn { background-color: #fa5252; }
+        .delete-btn:hover { background-color: #e03131; }
+
+        .empty-message {
+            text-align: center;
+            color: #868e96;
+            padding: 20px;
+            display: none;
+        }
+
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .pagination-info {
+            color: #495057;
+            font-size: 14px;
+        }
+        .pagination-controls {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        .page-btn {
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #495057;
+            transition: all 0.2s;
+        }
+        .page-btn:hover:not(:disabled) {
+            background: #228be6;
+            color: white;
+            border-color: #228be6;
+        }
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .page-btn.active {
+            background: #228be6;
+            color: white;
+            border-color: #228be6;
+        }
+        .page-size-selector {
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .footer {
+            margin-top: auto;
+            padding-top: 30px;
+            padding-bottom: 10px;
+            text-align: center;
+            color: #adb5bd;
+            font-size: 13px;
+            font-weight: 500;
+            border-top: 1px solid #e9ecef;
+            width: 100%;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .footer span {
+            color: #868e96;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: #51cf66;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+        .toast.show {
+            display: block;
+        }
+        .toast.error {
+            background-color: #ff6b6b;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📋 Tedarikçi Yönetim Paneli</h2>
+
+    <div class="loading" id="loadingIndicator">⏳ Yükleniyor...</div>
+
+    <button id="refreshBtn" onclick="loadSuppliers()">🔄 Yenile</button>
+
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Malzeme / Ürün Grubu</label>
+            <input type="text" id="material" placeholder="Örn: Kesici">
+        </div>
+        <div class="form-group">
+            <label>Firma Adı</label>
+            <input type="text" id="company" placeholder="Firma Adı">
+        </div>
+        <div class="form-group">
+            <label>Ülke</label>
+            <select id="country">
+                <option value="">Seçiniz...</option>
+                <option value="Türkiye">🇹🇷 Türkiye</option>
+                <option value="Almanya">🇩🇪 Almanya</option>
+                <option value="İtalya">🇮🇹 İtalya</option>
+                <option value="Çin">🇨🇳 Çin</option>
+                <option value="ABD">🇺🇸 ABD</option>
+                <option value="İngiltere">🇬🇧 İngiltere</option>
+                <option value="Fransa">🇫🇷 Fransa</option>
+                <option value="İspanya">🇪🇸 İspanya</option>
+                <option value="Japonya">🇯🇵 Japonya</option>
+                <option value="Güney Kore">🇰🇷 Güney Kore</option>
+                <option value="Hindistan">🇮🇳 Hindistan</option>
+                <option value="Brezilya">🇧🇷 Brezilya</option>
+                <option value="Rusya">🇷🇺 Rusya</option>
+                <option value="Hollanda">🇳🇱 Hollanda</option>
+                <option value="Belçika">🇧🇪 Belçika</option>
+                <option value="İsviçre">🇨🇭 İsviçre</option>
+                <option value="Avusturya">🇦🇹 Avusturya</option>
+                <option value="Polonya">🇵🇱 Polonya</option>
+                <option value="Çek Cumhuriyeti">🇨🇿 Çek Cumhuriyeti</option>
+                <option value="Diğer">🌍 Diğer</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>İlgili Kişi(ler)</label>
+            <input type="text" id="contactPerson" placeholder="(Eklemek için virgülle ayırın)">
+        </div>
+        <div class="form-group">
+            <label>Telefon Numarası</label>
+            <input type="text" id="phone" placeholder="(Eklemek için virgülle ayırın)">
+        </div>
+        <div class="form-group">
+            <label>Mail Adresi</label>
+            <input type="text" id="emails" placeholder="(Eklemek için virgülle ayırın)">
+        </div>
+
+        <div class="btn-group">
+            <button id="saveBtn" onclick="saveSupplier()">Listeye Ekle</button>
+            <button id="cancelBtn" onclick="cancelEdit()">Vazgeç</button>
+        </div>
+    </div>
+
+    <div class="import-section">
+        <input type="file" id="importFile" accept=".csv,.xlsx,.xls" onchange="importData()">
+        <button class="import-btn" onclick="document.getElementById('importFile').click()">
+            📥 CSV/Excel İçe Aktar
+        </button>
+    </div>
+
+    <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Firma, malzeme, ülke, telefon veya kişi ara...">
+    </div>
+
+    <div class="table-responsive">
+        <table id="supplierTable">
+            <thead>
+                <tr>
+                    <th class="sortable" onclick="sortTable('material')" width="12%">Malzeme</th>
+                    <th class="sortable" onclick="sortTable('company')" width="18%">Firma</th>
+                    <th class="sortable" onclick="sortTable('country')" width="10%">Ülke</th>
+                    <th class="sortable" onclick="sortTable('contactPerson')" width="13%">İlgili Kişi(ler)</th>
+                    <th width="13%">Telefon(lar)</th>
+                    <th width="18%">Mail Adresleri</th>
+                    <th width="13%">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody id="supplierList"></tbody>
+        </table>
+        <div id="emptyMessage" class="empty-message">Kayıt bulunamadı.</div>
+    </div>
+
+    <div class="pagination-container" id="paginationContainer">
+        <div class="pagination-info" id="paginationInfo"></div>
+        <div class="pagination-controls">
+            <button class="page-btn" onclick="changePage('first')">⏮️</button>
+            <button class="page-btn" onclick="changePage('prev')">◀️</button>
+            <span id="pageNumbers"></span>
+            <button class="page-btn" onclick="changePage('next')">▶️</button>
+            <button class="page-btn" onclick="changePage('last')">⏭️</button>
+            <select class="page-size-selector" id="pageSize" onchange="changePageSize()">
+                <option value="10">10 / sayfa</option>
+                <option value="25">25 / sayfa</option>
+                <option value="50">50 / sayfa</option>
+                <option value="100">100 / sayfa</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="footer">
+        &copy; <span id="year"></span> Sabri Sühan Mavizer tarafından tasarlanmıştır.
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ============================================
+// AYARLAR - Buradan değiştirin!
+// ============================================
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyb_o9QipvGjxMzJfjErMDkKbAmpTUI6svzBy4IamCvCupSsRgKlVstoMXlMPItq0M_/exec';
+
+let editingRowIndex = null;
+let currentPage = 1;
+let itemsPerPage = 10;
+let currentSort = { column: null, direction: 'asc' };
+let filteredData = [];
+let allSuppliers = [];
+let tempRowIndex = 999999;
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('year').textContent = new Date().getFullYear();
+    loadSuppliers();
+});
+
+function showLoading(show) {
+    const loader = document.getElementById('loadingIndicator');
+    if (show) {
+        loader.classList.add('active');
+    } else {
+        loader.classList.remove('active');
+    }
+}
+
+function showToast(message, isError = false) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = 'toast show' + (isError ? ' error' : '');
+    setTimeout(() => { toast.classList.remove('show'); }, 3000);
+}
+
+async function loadSuppliers() {
+    showLoading(true);
+    try {
+        const response = await fetch(WEB_APP_URL);
+        const data = await response.json();
+        allSuppliers = data.map(item => ({
+            rowIndex: item.rowIndex,
+            material: String(item.material || ''),
+            company: String(item.company || ''),
+            country: String(item.country || ''),
+            contactPerson: String(item.contactPerson || ''),
+            phone: String(item.phone || ''),
+            emails: String(item.emails || '')
+        }));
+        filterTable();
+        showLoading(false);
+    } catch (error) {
+        console.error('Veri yükleme hatası:', error);
+        showToast('Veriler yüklenirken hata oluştu!', true);
+        showLoading(false);
+    }
+}
+
+async function saveSupplier() {
+    const material = document.getElementById('material').value.trim();
+    const company = document.getElementById('company').value.trim();
+    const country = document.getElementById('country').value.trim();
+    const contactPerson = document.getElementById('contactPerson').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const emails = document.getElementById('emails').value.trim();
+
+    if (company === "" || material === "") {
+        showToast("Lütfen en azından Firma Adı ve Malzeme bilgisini girin!", true);
+        return;
+    }
+
+    const isUpdate = editingRowIndex !== null;
+    let oldSupplier = null;
+
+    if (isUpdate) {
+        const index = allSuppliers.findIndex(s => s.rowIndex === editingRowIndex);
+        if (index !== -1) {
+            oldSupplier = { ...allSuppliers[index] };
+            allSuppliers[index] = {
+                rowIndex: editingRowIndex,
+                material, company, country, contactPerson, phone, emails
+            };
+        }
+        showToast('Kayıt güncellendi!');
+    } else {
+        allSuppliers.push({
+            rowIndex: tempRowIndex++,
+            material, company, country, contactPerson, phone, emails
+        });
+        showToast('Kayıt eklendi!');
+    }
+
+    cancelEdit();
+    filterTable();
+
+    try {
+        const requestData = {
+            action: isUpdate ? 'update' : 'add',
+            material, company, country, contactPerson, phone, emails
+        };
+        if (isUpdate) requestData.rowIndex = editingRowIndex;
+
+        await fetch(WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestData)
+        });
+
+        if (!isUpdate) {
+            setTimeout(async () => { await loadSuppliers(); }, 2000);
+        }
+    } catch (error) {
+        console.error('Kayıt hatası:', error);
+        showToast('Senkronizasyon hatası! Sayfayı yenileyin.', true);
+        if (isUpdate && oldSupplier) {
+            const index = allSuppliers.findIndex(s => s.rowIndex === editingRowIndex);
+            if (index !== -1) allSuppliers[index] = oldSupplier;
+        } else if (!isUpdate) {
+            allSuppliers = allSuppliers.filter(s => s.rowIndex < 999999);
+        }
+        filterTable();
+    }
+}
+
+function editSupplier(rowIndex) {
+    const supplier = allSuppliers.find(s => s.rowIndex === rowIndex);
+    if (!supplier) {
+        showToast('Kayıt bulunamadı!', true);
+        return;
+    }
+    editingRowIndex = rowIndex;
+    document.getElementById('material').value = supplier.material;
+    document.getElementById('company').value = supplier.company;
+    document.getElementById('country').value = supplier.country;
+    document.getElementById('contactPerson').value = supplier.contactPerson;
+    document.getElementById('phone').value = supplier.phone;
+    document.getElementById('emails').value = supplier.emails;
+    const saveBtn = document.getElementById('saveBtn');
+    saveBtn.innerText = "Güncelle";
+    saveBtn.classList.add('update-mode');
+    document.getElementById('cancelBtn').style.display = "block";
+    document.querySelector('.form-grid').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function deleteSupplier(rowIndex) {
+    if (!confirm('Bu kaydı silmek istediğinizden emin misiniz?')) return;
+    const deletedSupplier = allSuppliers.find(s => s.rowIndex === rowIndex);
+    allSuppliers = allSuppliers.filter(s => s.rowIndex !== rowIndex);
+    filterTable();
+    showToast('Kayıt silindi!');
+    try {
+        await fetch(WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'delete', rowIndex: rowIndex })
+        });
+    } catch (error) {
+        console.error('Silme hatası:', error);
+        allSuppliers.push(deletedSupplier);
+        allSuppliers.sort((a, b) => a.rowIndex - b.rowIndex);
+        filterTable();
+        showToast('Silme işlemi başarısız! Kayıt geri yüklendi.', true);
+    }
+}
+
+function cancelEdit() {
+    editingRowIndex = null;
+    document.getElementById('material').value = "";
+    document.getElementById('company').value = "";
+    document.getElementById('country').value = "";
+    document.getElementById('contactPerson').value = "";
+    document.getElementById('phone').value = "";
+    document.getElementById('emails').value = "";
+    const saveBtn = document.getElementById('saveBtn');
+    saveBtn.innerText = "Listeye Ekle";
+    saveBtn.classList.remove('update-mode');
+    document.getElementById('cancelBtn').style.display = "none";
+}
+
+function formatMultiData(dataString) {
+    if (!dataString) return "-";
+    const items = dataString.split(/[,;]+/).filter(e => e.trim() !== "");
+    return items.map(item => `<span class="list-item">👤 ${item.trim()}</span>`).join("");
+}
+
+function formatPhones(phoneString) {
+    if (!phoneString) return "-";
+    const items = phoneString.split(/[,;]+/).filter(e => e.trim() !== "");
+    return items.map(item => `<span class="list-item"><a href="tel:${item.trim()}" class="phone-link">📞 ${item.trim()}</a></span>`).join("");
+}
+
+function formatEmails(emailString) {
+    if (!emailString) return "-";
+    const emails = emailString.split(/[,; ]+/).filter(e => e.trim() !== "");
+    return emails.map(email => `<span class="list-item"><a href="mailto:${email}" class="data-link">✉️ ${email}</a></span>`).join("");
+}
+
+function renderTable(data) {
+    const list = document.getElementById('supplierList');
+    const emptyMsg = document.getElementById('emptyMessage');
+    list.innerHTML = "";
+    if (data.length === 0) {
+        emptyMsg.style.display = "block";
+        document.getElementById('paginationContainer').style.display = "none";
+    } else {
+        emptyMsg.style.display = "none";
+        document.getElementById('paginationContainer').style.display = "flex";
+        data.forEach(s => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><strong>${s.material}</strong></td>
+                <td>${s.company}</td>
+                <td>${s.country ? `<span class="country-badge">${s.country}</span>` : '-'}</td>
+                <td>${formatMultiData(s.contactPerson)}</td>
+                <td>${formatPhones(s.phone)}</td>
+                <td>${formatEmails(s.emails)}</td>
+                <td>
+                    <button class="action-btn edit-btn" onclick="editSupplier(${s.rowIndex})">Düzenle</button>
+                    <button class="action-btn delete-btn" onclick="deleteSupplier(${s.rowIndex})">Sil</button>
+                </td>
+            `;
+            list.appendChild(row);
+        });
+    }
+}
+
+function filterTable() {
+    const input = document.getElementById('searchInput');
+    const filter = input.value.toLowerCase();
+    filteredData = allSuppliers.filter(s => {
+        const material = String(s.material || '').toLowerCase();
+        const company = String(s.company || '').toLowerCase();
+        const country = String(s.country || '').toLowerCase();
+        const contactPerson = String(s.contactPerson || '').toLowerCase();
+        const phone = String(s.phone || '').toLowerCase();
+        const emails = String(s.emails || '').toLowerCase();
+        return (
+            material.includes(filter) || company.includes(filter) ||
+            country.includes(filter) || contactPerson.includes(filter) ||
+            phone.includes(filter) || emails.includes(filter)
+        );
+    });
+    if (currentSort.column) applySorting();
+    currentPage = 1;
+    renderPaginatedTable();
+}
+
+function sortTable(column) {
+    if (currentSort.column === column) {
+        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+    } else {
+        currentSort.column = column;
+        currentSort.direction = 'asc';
+    }
+    document.querySelectorAll('th').forEach(th => {
+        th.classList.remove('sort-asc', 'sort-desc');
+    });
+    event.target.classList.add(currentSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
+    applySorting();
+    renderPaginatedTable();
+}
+
+function applySorting() {
+    if (!currentSort.column) return;
+    filteredData.sort((a, b) => {
+        let valA = String(a[currentSort.column] || '').toLowerCase();
+        let valB = String(b[currentSort.column] || '').toLowerCase();
+        if (valA < valB) return currentSort.direction === 'asc' ? -1 : 1;
+        if (valA > valB) return currentSort.direction === 'asc' ? 1 : -1;
+        return 0;
+    });
+}
+
+function renderPaginatedTable() {
+    const totalItems = filteredData.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    if (currentPage > totalPages) currentPage = totalPages || 1;
+    if (currentPage < 1) currentPage = 1;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const pageData = filteredData.slice(startIndex, endIndex);
+    renderTable(pageData);
+    updatePaginationControls(totalItems, totalPages);
+}
+
+function updatePaginationControls(totalItems, totalPages) {
+    const startItem = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+    const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+    document.getElementById('paginationInfo').textContent = 
+        `${startItem}-${endItem} arası gösteriliyor (Toplam: ${totalItems})`;
+    const pageNumbers = document.getElementById('pageNumbers');
+    pageNumbers.innerHTML = '';
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    if (endPage - startPage < maxVisiblePages - 1) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    for (let i = startPage; i <= endPage; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
+        btn.textContent = i;
+        btn.onclick = () => goToPage(i);
+        pageNumbers.appendChild(btn);
+    }
+}
+
+function changePage(direction) {
+    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+    switch(direction) {
+        case 'first': currentPage = 1; break;
+        case 'prev': if (currentPage > 1) currentPage--; break;
+        case 'next': if (currentPage < totalPages) currentPage++; break;
+        case 'last': currentPage = totalPages; break;
+    }
+    renderPaginatedTable();
+}
+
+function goToPage(page) {
+    currentPage = page;
+    renderPaginatedTable();
+}
+
+function changePageSize() {
+    itemsPerPage = parseInt(document.getElementById('pageSize').value);
+    currentPage = 1;
+    renderPaginatedTable();
+}
+
+async function importData() {
+    const fileInput = document.getElementById('importFile');
+    const file = fileInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+            if (jsonData.length === 0) {
+                showToast("Dosya boş veya geçersiz format!", true);
+                return;
+            }
+            const values = jsonData.map(row => {
+                const material = row['Malzeme'] || row['malzeme'] || row['Material'] || row['material'] || '';
+                const company = row['Firma'] || row['firma'] || row['Company'] || row['company'] || '';
+                const country = row['Ülke'] || row['ülke'] || row['Country'] || row['country'] || '';
+                const contactPerson = row['İlgili Kişi'] || row['ilgili kişi'] || row['Contact'] || row['contact'] || '';
+                const phone = row['Telefon'] || row['telefon'] || row['Phone'] || row['phone'] || '';
+                const emails = row['Mail'] || row['mail'] || row['Email'] || row['email'] || '';
+                return [material, company, country, contactPerson, phone, emails];
+            }).filter(row => row[0] && row[1]);
+            if (values.length === 0) {
+                showToast("İçe aktarılacak geçerli veri bulunamadı!", true);
+                return;
+            }
+            values.forEach(row => {
+                allSuppliers.push({
+                    rowIndex: tempRowIndex++,
+                    material: String(row[0]),
+                    company: String(row[1]),
+                    country: String(row[2]),
+                    contactPerson: String(row[3]),
+                    phone: String(row[4]),
+                    emails: String(row[5])
+                });
+            });
+            filterTable();
+            showToast(`${values.length} kayıt içe aktarıldı!`);
+            await fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'import', values: values })
+            });
+            setTimeout(async () => { await loadSuppliers(); }, 2000);
+        } catch (error) {
+            showToast("Dosya okuma hatası! Lütfen geçerli bir CSV veya Excel dosyası seçin.", true);
+            console.error(error);
+        }
+        fileInput.value = '';
+    };
+    reader.readAsArrayBuffer(file);
+}
+</script>
+
+</body>
+</html>
